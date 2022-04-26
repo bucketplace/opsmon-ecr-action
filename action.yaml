@@ -161,7 +161,7 @@ runs:
           fi
         }
         function check_namespace() {
-          if [ "${GET_NAMESPACE}" == "" ]; then
+          if [ "${GET_NAMESPACE}" == "null" ]; then
             echo "== Namespace does not exist! Please add namespace on Ops-Monster"
             exit 1
           fi

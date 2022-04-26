@@ -8,7 +8,7 @@ This Action allows you to create Docker images and push into a ECR repository.
 | `access_key_id` | `string` | | Your AWS access key id |
 | `secret_access_key` | `string` | | Your AWS secret access key |
 | `account_id` | `string` | | Your AWS Account ID |
-| `repo` | `string` | | Name of your ECR repository |
+| `app_name` | `string` | | Name of Application |
 | `region` | `string` | | Your AWS region |
 | `create_repo` | `boolean` | `false` | Set this to true to create the repository if it does not already exist |
 | `set_repo_policy` | `boolean` | `false` | Set this to true to set a IAM policy on the repository |
@@ -25,33 +25,36 @@ This Action allows you to create Docker images and push into a ECR repository.
 ## Usage
 
 ```yaml
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  APP_NAME: ops-monster
+
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
+  get-namespace:
+    runs-on: [ self-hosted, Linux, X64, prod-k8s-runner ]
     steps:
-    - uses: actions/checkout@v2
-    - uses: docker://ghcr.io/kciter/aws-ecr-action:latest
-      with:
-        access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        account_id: ${{ secrets.AWS_ACCOUNT_ID }}
-        repo: docker/repo
-        region: ap-northeast-2
-        tags: latest,${{ github.sha }}
-        create_repo: true
-        image_scanning_configuration: true
-        set_repo_policy: true
-        repo_policy_file: repo-policy.json
-```
-
-If you don't want to use the latest docker image, you can point to any reference in the repo directly.
-
-```yaml
-  - uses: kciter/aws-ecr-action@master
-  # or
-  - uses: kciter/aws-ecr-action@v3
-  # or
-  - uses: kciter/aws-ecr-action@0589ad88c51a1b08fd910361ca847ee2cb708a30
+      - name: Check out code
+        uses: actions/checkout@v1
+      - name: get image tag and version
+        id: vars
+        run: |
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+      - uses: bucketplace/aws-ecr-action@main
+        with:
+          access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          account_id: ${{ secrets.AWS_ACCOUNT_ID }}
+          app_name: ${{ env.APP_NAME }}
+          region: ap-northeast-2
+          tags: ${{ steps.vars.outputs.sha_short }}
+          dockerfile: Dockerfile
+          create_repo: true
 ```
 
 ## License

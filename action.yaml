@@ -13,18 +13,13 @@ inputs:
     required: true
   app_name:
     description: name of application
-    required: false
-    default: ''
+    required: true
   registry_ids:
     description: A comma-delimited list of AWS account IDs that are associated with the ECR registries. If you do not specify a registry, the default ECR registry is assumed
     required: false
     default: ''
   assume_role:
     description: A role to assume under the account_id account.
-    required: false
-    default: ''
-  repo:
-    description: Name of your ECR repository
     required: false
     default: ''
   region:
@@ -92,8 +87,8 @@ runs:
         INPUT_ACCOUNT_ID: ${{ inputs.account_id }}
         INPUT_REGISTRY_IDS: ${{ inputs.registry_ids }}
         INPUT_ASSUME_ROLE: ${{ inputs.assume_role }}
-        INPUT_REPO_FROM_DB: ${{ steps.get-namespace.outputs.namespace }}/${{ inputs.app_name }}
-        INPUT_REPO: ${{ inputs.repo }}
+        GET_NAMESPACE: ${{ steps.get-namespace.outputs.namespace }}
+        INPUT_REPO: ${{ steps.get-namespace.outputs.namespace }}/${{ inputs.app_name }}
         INPUT_REGION: ${{ inputs.region }}
         INPUT_CREATE_REPO: ${{ inputs.create_repo }}
         INPUT_SET_REPO_POLICY: ${{ inputs.set_repo_policy }}
@@ -109,7 +104,6 @@ runs:
         INPUT_PATH="${INPUT_PATH:-.}"
         INPUT_DOCKERFILE="${INPUT_DOCKERFILE:-Dockerfile}"
         INPUT_TAGS="${INPUT_TAGS:-latest}"
-        INPUT_REPO="${INPUT_REPO_FROM_DB:INPUT_REPO}"
         INPUT_CREATE_REPO="${INPUT_CREATE_REPO:-false}"
         INPUT_SET_REPO_POLICY="${INPUT_SET_REPO_POLICY:-false}"
         INPUT_REPO_POLICY_FILE="${INPUT_REPO_POLICY_FILE:-repo-policy.json}"
@@ -119,13 +113,13 @@ runs:
           sanitize "${INPUT_SECRET_ACCESS_KEY}" "secret_access_key"
           sanitize "${INPUT_REGION}" "region"
           sanitize "${INPUT_ACCOUNT_ID}" "account_id"
-          sanitize "${INPUT_REPO}" "repo"
           ACCOUNT_URL="$INPUT_ACCOUNT_ID.dkr.ecr.$INPUT_REGION.amazonaws.com"
           aws_configure
           assume_role
           login
           run_pre_build_script $INPUT_PREBUILD_SCRIPT
           docker_build $INPUT_TAGS $ACCOUNT_URL
+          check_namespace
           create_ecr_repo $INPUT_CREATE_REPO
           set_ecr_repo_policy $INPUT_SET_REPO_POLICY
           put_image_scanning_configuration $INPUT_IMAGE_SCANNING_CONFIGURATION
@@ -164,6 +158,12 @@ runs:
             export AWS_SECRET_ACCESS_KEY="${key}"
             export AWS_SESSION_TOKEN="${token}"
             echo "== FINISHED ASSUME ROLE"
+          fi
+        }
+        function check_namespace() {
+          if [ "${GET_NAMESPACE}" == "" ]; then
+            echo "== Namespace does not exist! Please add namespace on Ops-Monster"
+            exit 1
           fi
         }
         function create_ecr_repo() {

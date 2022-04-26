@@ -13,7 +13,8 @@ inputs:
     required: true
   app_name:
     description: name of application
-    required: true
+    required: false
+    default: ''
   registry_ids:
     description: A comma-delimited list of AWS account IDs that are associated with the ECR registries. If you do not specify a registry, the default ECR registry is assumed
     required: false
@@ -25,6 +26,7 @@ inputs:
   repo:
     description: Name of your ECR repository
     required: false
+    default: ''
   region:
     description: The AWS region
     required: true
@@ -90,7 +92,8 @@ runs:
         INPUT_ACCOUNT_ID: ${{ inputs.account_id }}
         INPUT_REGISTRY_IDS: ${{ inputs.registry_ids }}
         INPUT_ASSUME_ROLE: ${{ inputs.assume_role }}
-        INPUT_REPO: ${{ steps.get-namespace.outputs.namespace }}/${{ inputs.app_name }}
+        INPUT_REPO_FROM_DB: ${{ steps.get-namespace.outputs.namespace }}/${{ inputs.app_name }}
+        INPUT_REPO: ${{ inputs.repo }}
         INPUT_REGION: ${{ inputs.region }}
         INPUT_CREATE_REPO: ${{ inputs.create_repo }}
         INPUT_SET_REPO_POLICY: ${{ inputs.set_repo_policy }}
@@ -106,6 +109,7 @@ runs:
         INPUT_PATH="${INPUT_PATH:-.}"
         INPUT_DOCKERFILE="${INPUT_DOCKERFILE:-Dockerfile}"
         INPUT_TAGS="${INPUT_TAGS:-latest}"
+        INPUT_REPO="${INPUT_REPO_FROM_DB:INPUT_REPO}"
         INPUT_CREATE_REPO="${INPUT_CREATE_REPO:-false}"
         INPUT_SET_REPO_POLICY="${INPUT_SET_REPO_POLICY:-false}"
         INPUT_REPO_POLICY_FILE="${INPUT_REPO_POLICY_FILE:-repo-policy.json}"

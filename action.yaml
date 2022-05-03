@@ -25,6 +25,7 @@ inputs:
   repo:
     description: Name of your ECR repository
     required: false
+    default: ''
   region:
     description: The AWS region
     required: true
@@ -83,27 +84,6 @@ runs:
         INPUT_OPSMON_URL="${INPUT_OPSMON_URL:-https://ops.co-workerhou.se/api}"
         echo "::set-output name=image_repo::$(curl -s "${INPUT_OPSMON_URL}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
         echo "::set-output name=image_repo_list::$(curl -s "${INPUT_OPSMON_URL}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list')"
-    - name: Image Repo from Ops-Monster
-      if: ${{ steps.get-image-repo.outputs.image_repo }}
-      uses: bucketplace/docker-ecr-action@main
-      with:
-        access_key_id: ${{ inputs.access_key_id }}
-        secret_access_key: ${{ inputs.secret_access_key }}
-        account_id: ${{ inputs.account_id }}
-        registry_ids: ${{ inputs.registry_ids }}
-        assume_role: ${{ inputs.assume_role }}
-        repo: ${{ steps.get-image-repo.outputs.image_repo }}
-        region: ${{ inputs.region }}
-        create_repo: ${{ inputs.create_repo }}
-        set_repo_policy: ${{ inputs.set_repo_policy }}
-        repo_policy_file: ${{ inputs.repo_policy_file }}
-        tags: ${{ inputs.tags }}
-        image_scanning_configuration: ${{ inputs.image_scanning_configuration }}
-        dockerfile: ${{ inputs.dockerfile }}
-        extra_build_args: ${{ inputs.extra_build_args }}
-        cache_from: ${{ inputs.cache_from }}
-        path: ${{ inputs.path }}
-        prebuild_script: ${{ inputs.prebuild_script }}
     - name: Image Repo from Input
       if: contains(steps.get-image-repo.outputs.image_repo_list, inputs.repo )
       id: second-repo
@@ -128,7 +108,28 @@ runs:
         prebuild_script: ${{ inputs.prebuild_script }}
     - name: Fail Step
       shell: bash
-      if: (inputs.repo) && ( steps.second-repo.result == 'skipped' )
+      if: (inputs.repo != '') && ( steps.second-repo.result == 'skipped' )
       run: |-
         echo "repo does not exists on Ops-Monster."
         exit 1
+    - name: Image Repo from Ops-Monster
+      if: ${{ steps.get-image-repo.outputs.image_repo }}
+      uses: bucketplace/docker-ecr-action@main
+      with:
+        access_key_id: ${{ inputs.access_key_id }}
+        secret_access_key: ${{ inputs.secret_access_key }}
+        account_id: ${{ inputs.account_id }}
+        registry_ids: ${{ inputs.registry_ids }}
+        assume_role: ${{ inputs.assume_role }}
+        repo: ${{ steps.get-image-repo.outputs.image_repo }}
+        region: ${{ inputs.region }}
+        create_repo: ${{ inputs.create_repo }}
+        set_repo_policy: ${{ inputs.set_repo_policy }}
+        repo_policy_file: ${{ inputs.repo_policy_file }}
+        tags: ${{ inputs.tags }}
+        image_scanning_configuration: ${{ inputs.image_scanning_configuration }}
+        dockerfile: ${{ inputs.dockerfile }}
+        extra_build_args: ${{ inputs.extra_build_args }}
+        cache_from: ${{ inputs.cache_from }}
+        path: ${{ inputs.path }}
+        prebuild_script: ${{ inputs.prebuild_script }}

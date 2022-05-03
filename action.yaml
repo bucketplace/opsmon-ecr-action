@@ -82,6 +82,7 @@ runs:
       run: |
         INPUT_OPSMON_URL="${INPUT_OPSMON_URL:-https://ops.co-workerhou.se/api}"
         echo "::set-output name=image_repo::$(curl -s "${INPUT_OPSMON_URL}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
+        echo "::set-output name=image_repo_list::$(curl -s "${INPUT_OPSMON_URL}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list')"
     - name: Image Repo from Ops-Monster
       if: ${{ steps.get-image-repo.outputs.image_repo }}
       uses: bucketplace/docker-ecr-action@main
@@ -104,7 +105,7 @@ runs:
         path: ${{ inputs.path }}
         prebuild_script: ${{ inputs.prebuild_script }}
     - name: Image Repo from Input
-      if: ${{ inputs.repo }}
+      if: contains( ${{ steps.get-image-repo.outputs.image_repo_list }}, ${{ inputs.repo }} )
       uses: bucketplace/docker-ecr-action@main
       with:
         access_key_id: ${{ inputs.access_key_id }}

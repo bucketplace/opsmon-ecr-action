@@ -77,10 +77,8 @@ runs:
     - name: Get Image Repo
       shell: bash
       id: get-image-repo
-      env:
-        OPSMON_URL: ${{ inputs.opsmon_url }}
       run: |
-        echo "::set-output name=image_repo::$(curl -s "{{ env.OPSMON_URL }}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
+        echo "::set-output name=image_repo::$(curl -s "{{ inputs.opsmon_url }}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
     - name: Image Repo from Ops-Monster
       uses: bucketplace/docker-ecr-action@main
       with:

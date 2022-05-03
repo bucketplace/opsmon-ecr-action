@@ -82,6 +82,8 @@ runs:
       run: |
         echo "::set-output name=image_repo::$(curl -s "{{ env.INPUT_OPSMON_URL }}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
     - name: Image Repo from Ops-Monster
+      env:
+        INPUT_REPO: ${{ steps.get-image-repo.outputs.image_repo }}
       uses: bucketplace/docker-ecr-action@main
       with:
         access_key_id: ${{ inputs.access_key_id }}
@@ -89,7 +91,7 @@ runs:
         account_id: ${{ inputs.account_id }}
         registry_ids: ${{ inputs.registry_ids }}
         assume_role: ${{ inputs.assume_role }}
-        repo: ${{ steps.get-image-repo.outputs.image_repo }}
+        repo: ${{ env.INPUT_REPO }}
         region: ${{ inputs.region }}
         create_repo: ${{ inputs.create_repo }}
         set_repo_policy: ${{ inputs.set_repo_policy }}

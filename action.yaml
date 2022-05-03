@@ -76,7 +76,7 @@ runs:
       env:
         OPSMON_URL: 'https://ops.co-workerhou.se/api'
       run: |
-        echo "::set-output name=image_repo::$(curl -s "{{ env.INPUT_OPSMON_URL }}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
+        echo "::set-output name=image_repo::$(curl -s "{{ env.OPSMON_URL }}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
     - name: Image Repo from Ops-Monster
       uses: bucketplace/docker-ecr-action@main
       with:

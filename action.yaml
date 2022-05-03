@@ -69,7 +69,7 @@ inputs:
     required: false
   opsmon_url:
     description: Prod api url of ops-monster
-    required: false
+    required: true
     default: https://ops.co-workerhou.se/api
 runs:
   using: "composite"

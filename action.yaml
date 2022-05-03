@@ -86,7 +86,7 @@ runs:
     - name: Image Repo from Input
       if: contains( ${{ steps.second-image-repo.outputs.image_repo_list }}, ${{ inputs.repo }} )
       id: second-repo
-      uses: bucketplace/docker-ecr-action@main
+      uses: bucketplace/docker-ecr-action@main-1
       with:
         access_key_id: ${{ inputs.access_key_id }}
         secret_access_key: ${{ inputs.secret_access_key }}

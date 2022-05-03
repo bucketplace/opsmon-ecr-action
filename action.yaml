@@ -105,7 +105,7 @@ runs:
         path: ${{ inputs.path }}
         prebuild_script: ${{ inputs.prebuild_script }}
     - name: Image Repo from Input
-      if: contains( ${{ steps.get-image-repo.outputs.image_repo_list }}, ${{ inputs.repo }} )
+      if: contains(steps.get-image-repo.outputs.image_repo_list, inputs.repo )
       id: second-repo
       uses: bucketplace/docker-ecr-action@main
       with:
@@ -128,7 +128,7 @@ runs:
         prebuild_script: ${{ inputs.prebuild_script }}
     - name: Fail Step
       shell: bash
-      if: ${{ inputs.repo }} && ( steps.second-repo.result == 'skipped' )
+      if: (inputs.repo) && ( steps.second-repo.result == 'skipped' )
       run: |-
         echo "repo does not exists on Ops-Monster."
         exit 1

@@ -120,7 +120,7 @@ runs:
         echo "repo does not exists on Ops-Monster."
         exit 1
     - name: Image Repo from Ops-Monster
-      if: steps.first-image-repo.outputs.image_repo != inputs.repo
+      if: (steps.first-image-repo.outputs.image_repo != inputs.repo)
       uses: bucketplace/docker-ecr-action@main
       with:
         access_key_id: ${{ inputs.access_key_id }}

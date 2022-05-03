@@ -70,7 +70,7 @@ inputs:
   opsmon_url:
     description: Prod api url of ops-monster
     required: false
-    default: https://ops.co-workerhou.se/api
+    default: 'https://ops.co-workerhou.se/api'
 runs:
   using: "composite"
   steps:
@@ -83,15 +83,13 @@ runs:
         echo "::set-output name=image_repo::$(curl -s "{{ env.INPUT_OPSMON_URL }}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
     - name: Image Repo from Ops-Monster
       uses: bucketplace/docker-ecr-action@main
-      env:
-        INPUT_REPO: ${{ steps.get-image-repo.outputs.image_repo }}
       with:
         access_key_id: ${{ inputs.access_key_id }}
         secret_access_key: ${{ inputs.secret_access_key }}
         account_id: ${{ inputs.account_id }}
         registry_ids: ${{ inputs.registry_ids }}
         assume_role: ${{ inputs.assume_role }}
-        repo: ${{ env.INPUT_REPO }}
+        repo: ${{ steps.get-image-repo.outputs.image_repo }}
         region: ${{ inputs.region }}
         create_repo: ${{ inputs.create_repo }}
         set_repo_policy: ${{ inputs.set_repo_policy }}

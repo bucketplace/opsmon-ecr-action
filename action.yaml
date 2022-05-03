@@ -78,7 +78,7 @@ runs:
       shell: bash
       id: get-image-repo
       env:
-        INPUT_OPSMON_URL: ${{ inputs.opsmon_url == '' && 'https://ops.co-workerhou.se/api' || 'inputs.opsmon_url' }}
+        INPUT_OPSMON_URL: ${{ inputs.opsmon_url == '' && 'https://ops.co-workerhou.se/api' || inputs.opsmon_url }}
       run: |
         echo "::set-output name=image_repo::$(curl -s "{{ env.INPUT_OPSMON_URL }}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
     - name: Image Repo from Ops-Monster

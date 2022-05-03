@@ -67,10 +67,6 @@ inputs:
   prebuild_script:
     description: Relative path from top-level to script to run before Docker build
     required: false
-  opsmon_url:
-    description: Prod api url of ops-monster
-    required: false
-    default: 'https://ops.co-workerhou.se/api'
 runs:
   using: "composite"
   steps:
@@ -78,7 +74,7 @@ runs:
       shell: bash
       id: get-image-repo
       env:
-        INPUT_OPSMON_URL: ${{ inputs.opsmon_url }}
+        OPSMON_URL: 'https://ops.co-workerhou.se/api'
       run: |
         echo "::set-output name=image_repo::$(curl -s "{{ env.INPUT_OPSMON_URL }}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
     - name: Image Repo from Ops-Monster

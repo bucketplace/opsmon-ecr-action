@@ -83,14 +83,6 @@ runs:
       run: |
         INPUT_OPSMON_URL="${INPUT_OPSMON_URL:-https://ops.co-workerhou.se/api}"
         echo "::set-output name=image_repo_list::$(curl -s "${INPUT_OPSMON_URL}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list')"
-    - name: Get Fisrt Image Repo
-      shell: bash
-      id: first-image-repo
-      env:
-        INPUT_OPSMON_URL: ${{ inputs.opsmon_url }}
-      run: |
-        INPUT_OPSMON_URL="${INPUT_OPSMON_URL:-https://ops.co-workerhou.se/api}"
-        echo "::set-output name=image_repo::$(curl -s "${INPUT_OPSMON_URL}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
     - name: Image Repo from Input
       if: contains(steps.second-image-repo.outputs.image_repo_list, inputs.repo )
       id: second-repo
@@ -119,6 +111,17 @@ runs:
       run: |-
         echo "repo does not exists on Ops-Monster."
         exit 1
+    - name: Get Fisrt Image Repo
+      shell: bash
+      id: first-image-repo
+      env:
+        INPUT_OPSMON_URL: ${{ inputs.opsmon_url }}
+      run: |
+        INPUT_OPSMON_URL="${INPUT_OPSMON_URL:-https://ops.co-workerhou.se/api}"
+        echo "::set-output name=image_repo::$(curl -s "${INPUT_OPSMON_URL}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
+    - name: TEST!!!!
+      shell: bash
+      run: echo "${{ steps.first-image-repo.outputs.image_repo }} !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     - name: Image Repo from Ops-Monster
       if: (steps.first-image-repo.outputs.image_repo != inputs.repo)
       uses: bucketplace/docker-ecr-action@main

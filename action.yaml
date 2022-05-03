@@ -74,8 +74,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install aws-cli
-      uses: unfor19/install-aws-cli-action@v1
     - name: Get Image Repo
       shell: bash
       id: get-image-repo

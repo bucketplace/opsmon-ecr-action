@@ -75,17 +75,24 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Get Image Repo
+    - name: Get First Image Repo
       shell: bash
-      id: get-image-repo
+      id: first-image-repo
       env:
         INPUT_OPSMON_URL: ${{ inputs.opsmon_url }}
       run: |
         INPUT_OPSMON_URL="${INPUT_OPSMON_URL:-https://ops.co-workerhou.se/api}"
         echo "::set-output name=image_repo::$(curl -s "${INPUT_OPSMON_URL}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
+    - name: Get Second Image Repo
+      shell: bash
+      id: second-image-repo
+      env:
+        INPUT_OPSMON_URL: ${{ inputs.opsmon_url }}
+      run: |
+        INPUT_OPSMON_URL="${INPUT_OPSMON_URL:-https://ops.co-workerhou.se/api}"
         echo "::set-output name=image_repo_list::$(curl -s "${INPUT_OPSMON_URL}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list')"
     - name: Image Repo from Input
-      if: contains(steps.get-image-repo.outputs.image_repo_list, inputs.repo )
+      if: contains(steps.second-image-repo.outputs.image_repo_list, inputs.repo )
       id: second-repo
       uses: bucketplace/docker-ecr-action@main
       with:
@@ -113,7 +120,7 @@ runs:
         echo "repo does not exists on Ops-Monster."
         exit 1
     - name: Image Repo from Ops-Monster
-      if: ${{ steps.get-image-repo.outputs.image_repo }}
+      if: steps.first-image-repo.outputs.image_repo != inputs.repo
       uses: bucketplace/docker-ecr-action@main
       with:
         access_key_id: ${{ inputs.access_key_id }}
@@ -121,7 +128,7 @@ runs:
         account_id: ${{ inputs.account_id }}
         registry_ids: ${{ inputs.registry_ids }}
         assume_role: ${{ inputs.assume_role }}
-        repo: ${{ steps.get-image-repo.outputs.image_repo }}
+        repo: ${{ steps.first-image-repo.outputs.image_repo }}
         region: ${{ inputs.region }}
         create_repo: ${{ inputs.create_repo }}
         set_repo_policy: ${{ inputs.set_repo_policy }}

@@ -84,7 +84,7 @@ runs:
         INPUT_OPSMON_URL="${INPUT_OPSMON_URL:-https://ops.co-workerhou.se/api}"
         echo "::set-output name=image_repo_list::$(curl -s "${INPUT_OPSMON_URL}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list')"
     - name: Image Repo from Input
-      if: contains(steps.second-image-repo.outputs.image_repo_list, inputs.repo )
+      if: contains(steps.second-image-repo.outputs.image_repo_list, ${{ inputs.repo }} )
       id: second-repo
       uses: bucketplace/docker-ecr-action@main
       with:

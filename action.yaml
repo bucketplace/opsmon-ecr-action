@@ -83,6 +83,7 @@ runs:
         INPUT_OPSMON_URL="${INPUT_OPSMON_URL:-https://ops.co-workerhou.se/api}"
         echo "::set-output name=image_repo::$(curl -s "${INPUT_OPSMON_URL}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
     - name: Image Repo from Ops-Monster
+      if: ${{ steps.get-image-repo.outputs.image_repo }}
       uses: bucketplace/docker-ecr-action@main
       with:
         access_key_id: ${{ inputs.access_key_id }}

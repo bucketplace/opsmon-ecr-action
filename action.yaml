@@ -108,7 +108,7 @@ runs:
         prebuild_script: ${{ inputs.prebuild_script }}
     - name: Fail Step
       shell: bash
-      if: (inputs.repo != '') && ( steps.second-repo.result == 'skipped' )
+      if: (inputs.repo != '') && ( steps.second-repo.outcome == 'skipped' )
       run: |-
         echo "repo does not exists on Ops-Monster."
         exit 1

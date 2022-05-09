@@ -74,13 +74,6 @@ inputs:
   prebuild_script:
     description: Relative path from top-level to script to run before Docker build
     required: false
-outputs:
-  first_repo:
-    value: ${{ steps.image-repo.outputs.first_repo }}
-    description: 'first image repo'
-  second_repo:
-    value: ${{ steps.image-repo.outputs.second_repo }}
-    description: 'second image repo'
 runs:
   using: "composite"
   steps:

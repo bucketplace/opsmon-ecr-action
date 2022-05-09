@@ -14,6 +14,12 @@ inputs:
   app_name:
     description: name of application
     required: true
+  auth_token:
+    description: token of ops-monster
+    required: true
+  base_url:
+    description: url of ops-monster
+    required: true
   registry_ids:
     description: A comma-delimited list of AWS account IDs that are associated with the ECR registries. If you do not specify a registry, the default ECR registry is assumed
     required: false
@@ -25,6 +31,7 @@ inputs:
   repo:
     description: Name of your ECR repository
     required: false
+    default: ''
   region:
     description: The AWS region
     required: true
@@ -67,23 +74,28 @@ inputs:
   prebuild_script:
     description: Relative path from top-level to script to run before Docker build
     required: false
-  opsmon_url:
-    description: Prod api url of ops-monster
-    required: false
-    default: https://ops.co-workerhou.se/api
+outputs:
+  first_repo:
+    value: ${{ steps.image-repo.outputs.first_repo }}
+    description: 'first image repo'
+  second_repo:
+    value: ${{ steps.image-repo.outputs.second_repo }}
+    description: 'second image repo'
 runs:
   using: "composite"
   steps:
     - name: Get Image Repo
-      shell: bash
-      id: get-image-repo
+      id: image-repo
+      uses: bucketplace/image-list-actions@main
       env:
-        INPUT_OPSMON_URL: ${{ inputs.opsmon_url }}
-      run: |
-        INPUT_OPSMON_URL="${INPUT_OPSMON_URL:-https://ops.co-workerhou.se/api}"
-        echo "::set-output name=image_repo::$(curl -s "${INPUT_OPSMON_URL}/v1/applications/${{ inputs.app_name }}/" | jq -r '.detail.image_repo_list[0]')"
-    - name: Image Repo from Ops-Monster
-      if: ${{ steps.get-image-repo.outputs.image_repo }}
+        AUTH_TOKEN: ${{ inputs.auth_token }}
+        BASE_URL: ${{ inputs.base_url }}
+      with:
+        app_name: ${{ inputs.app_name }}
+        input_repo: ${{ inputs.repo }}
+
+    - name: Register First Image Repo
+      if: ${{ steps.image-repo.outputs.first_repo }}
       uses: bucketplace/docker-ecr-action@main
       with:
         access_key_id: ${{ inputs.access_key_id }}
@@ -91,7 +103,7 @@ runs:
         account_id: ${{ inputs.account_id }}
         registry_ids: ${{ inputs.registry_ids }}
         assume_role: ${{ inputs.assume_role }}
-        repo: ${{ steps.get-image-repo.outputs.image_repo }}
+        repo: ${{ steps.image-repo.outputs.first_repo }}
         region: ${{ inputs.region }}
         create_repo: ${{ inputs.create_repo }}
         set_repo_policy: ${{ inputs.set_repo_policy }}
@@ -103,8 +115,9 @@ runs:
         cache_from: ${{ inputs.cache_from }}
         path: ${{ inputs.path }}
         prebuild_script: ${{ inputs.prebuild_script }}
-    - name: Image Repo from Input
-      if: ${{ inputs.repo }}
+
+    - name: Register Second Image Repo
+      if: ${{ steps.image-repo.outputs.second_repo }}
       uses: bucketplace/docker-ecr-action@main
       with:
         access_key_id: ${{ inputs.access_key_id }}
@@ -112,7 +125,7 @@ runs:
         account_id: ${{ inputs.account_id }}
         registry_ids: ${{ inputs.registry_ids }}
         assume_role: ${{ inputs.assume_role }}
-        repo: ${{ inputs.repo }}
+        repo: ${{ steps.image-repo.outputs.second_repo }}
         region: ${{ inputs.region }}
         create_repo: ${{ inputs.create_repo }}
         set_repo_policy: ${{ inputs.set_repo_policy }}

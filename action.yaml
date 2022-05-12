@@ -94,8 +94,7 @@ runs:
         app_name: ${{ inputs.app_name }}
         input_repo: ${{ inputs.repo }}
 
-    - name: Register First Image Repo
-      if: ${{ steps.image-repo.outputs.first_repo }}
+    - name: run docker ecr action
       uses: bucketplace/docker-ecr-action@main
       with:
         access_key_id: ${{ inputs.access_key_id }}
@@ -103,29 +102,7 @@ runs:
         account_id: ${{ inputs.account_id }}
         registry_ids: ${{ inputs.registry_ids }}
         assume_role: ${{ inputs.assume_role }}
-        repo: ${{ steps.image-repo.outputs.first_repo }}
-        region: ${{ inputs.region }}
-        create_repo: ${{ inputs.create_repo }}
-        set_repo_policy: ${{ inputs.set_repo_policy }}
-        repo_policy_file: ${{ inputs.repo_policy_file }}
-        tags: ${{ inputs.tags }}
-        image_scanning_configuration: ${{ inputs.image_scanning_configuration }}
-        dockerfile: ${{ inputs.dockerfile }}
-        extra_build_args: ${{ inputs.extra_build_args }}
-        cache_from: ${{ inputs.cache_from }}
-        path: ${{ inputs.path }}
-        prebuild_script: ${{ inputs.prebuild_script }}
-
-    - name: Register Second Image Repo
-      if: ${{ steps.image-repo.outputs.second_repo }}
-      uses: bucketplace/docker-ecr-action@main
-      with:
-        access_key_id: ${{ inputs.access_key_id }}
-        secret_access_key: ${{ inputs.secret_access_key }}
-        account_id: ${{ inputs.account_id }}
-        registry_ids: ${{ inputs.registry_ids }}
-        assume_role: ${{ inputs.assume_role }}
-        repo: ${{ steps.image-repo.outputs.second_repo }}
+        repo: ${{ steps.image-repo.outputs.image_repo }}
         region: ${{ inputs.region }}
         create_repo: ${{ inputs.create_repo }}
         set_repo_policy: ${{ inputs.set_repo_policy }}

@@ -26,36 +26,18 @@ This Action allows you to create Docker images and push into a ECR repository.
 ## Usage
 
 ```yaml
-name: Deploy
-
-on:
-  push:
-    branches:
-      - main
-
-env:
-  APP_NAME: ops-monster
-
-jobs:
-  get-namespace:
-    runs-on: [ self-hosted, Linux, X64, prod-k8s-runner ]
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v1
-      - name: get image tag and version
-        id: vars
-        run: |
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-      - uses: bucketplace/aws-ecr-action@main
+      - uses: bucketplace/opsmon-ecr-action@main
         with:
+          auth_token: ${{ secrets.OPSMONSTER_AUTH_TOKEN_V2 }}
+          base_url: ${{ secrets.OPSMONSTER_BASE_URL_V2 }}
           access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          account_id: ${{ secrets.AWS_ACCOUNT_ID }}
+          account_id: "${{ secrets.AWS_ACCOUNT_ID }}"
           app_name: ${{ env.APP_NAME }}
           region: ap-northeast-2
-          tags: ${{ steps.vars.outputs.sha_short }}
+          tags: ${{ needs.get-image-tag.outputs.image_tag }}
           dockerfile: Dockerfile
-          create_repo: true
+          extra_build_args: "--target app"
 ```
 
 ## License
